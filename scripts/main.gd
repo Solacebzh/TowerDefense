@@ -21,8 +21,8 @@ var elapsed := 0.0
 var projectiles: Array[Dictionary] = []
 const TOWER_RANGE: float = 150.0
 const TOWER_FIRE_RATE: float = 0.7
-const MONSTER_TEXTURE := preload("res://assets/art/monster_crawler.png")
-const TOWER_TEXTURE := preload("res://assets/art/tower_blood_crystal.png")
+const MONSTER_TEXTURE: Texture2D = preload("res://assets/art/monster_crawler.png")
+const TOWER_TEXTURE: Texture2D = preload("res://assets/art/tower_blood_crystal.png")
 
 func _ready() -> void:
 	queue_redraw()
