@@ -146,7 +146,7 @@ func _draw() -> void:
 		if path_index < path_points.size():
 			facing = p.direction_to(path_points[path_index])
 		draw_set_transform(p + Vector2(0, bob), facing.angle(), Vector2(1, 1))
-		draw_texture_rect(MONSTER_TEXTURE, Rect2(-28, -30, Vector2(56, 60)), false)
+		draw_texture_rect(MONSTER_TEXTURE, Rect2(Vector2(-28, -30), Vector2(56, 60)), false)
 		draw_set_transform(Vector2.ZERO, 0.0, Vector2.ONE)
 		var hp_ratio: float = float(enemy["hp"]) / 3.0
 		draw_rect(Rect2(p + Vector2(-22, -40), Vector2(44, 4)), Color("1a1219"), true)
