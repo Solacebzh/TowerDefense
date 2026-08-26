@@ -914,4 +914,3 @@ func _draw_gameover() -> void:
 	_ui_text(Vector2(SCREEN.x*0.5 - 140, 345), "Éclats de Sang gagnés : %d ◈" % shards_this_run, 20, Color("b57bd6"))
 	_button(Rect2(SCREEN.x*0.5 - 240, 400, 220, 52), "⟲  NOUVELLE DESCENTE", "restart", null, true, Color("b83240"))
 	_button(Rect2(SCREEN.x*0.5 + 20, 400, 220, 52), "☗  SANCTUAIRE", "to_menu", null, true, Color("7a4a99"))
-
