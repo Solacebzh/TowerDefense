@@ -1,0 +1,14 @@
+# Godot 4
+.godot/
+.import/
+export.cfg
+export_presets.cfg
+*.translation
+
+# OS / editor
+.DS_Store
+Thumbs.db
+*.tmp
+
+# Local tooling (asset pipeline helpers, not required to run the game)
+tools/__pycache__/
