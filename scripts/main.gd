@@ -57,13 +57,15 @@ func _move_enemy(enemy: Dictionary, delta: float) -> void:
 	if path_index >= path_points.size():
 		return
 	var target: Vector2 = path_points[path_index]
-	var distance := enemy.position.distance_to(target)
-	var travel := enemy.speed * delta
+	var current_position: Vector2 = enemy["position"]
+	var speed: float = float(enemy["speed"])
+	var distance: float = current_position.distance_to(target)
+	var travel: float = speed * delta
 	if distance <= travel:
-		enemy.position = target
-		enemy.path_index = path_index + 1
+		enemy["position"] = target
+		enemy["path_index"] = path_index + 1
 	else:
-		enemy.position += enemy.position.direction_to(target) * travel
+		enemy["position"] = current_position + current_position.direction_to(target) * travel
 
 func _is_buildable(point: Vector2) -> bool:
 	for path_point in path_points:
