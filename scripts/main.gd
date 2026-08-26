@@ -28,7 +28,7 @@ func _process(delta: float) -> void:
 			spawn_timer = 0.8
 			_enemies_spawn()
 		for enemy in enemies:
-			enemy.position += enemy.direction * enemy.speed * delta
+			_move_enemy(enemy, delta)
 		queue_redraw()
 
 func _unhandled_input(event: InputEvent) -> void:
@@ -45,8 +45,25 @@ func _unhandled_input(event: InputEvent) -> void:
 		queue_redraw()
 
 func _enemies_spawn() -> void:
-	var enemy := {"position": path_points[0], "direction": Vector2.RIGHT, "speed": 34.0 + wave * 2.0}
+	var enemy := {
+		"position": path_points[0],
+		"path_index": 1,
+		"speed": 34.0 + wave * 2.0
+	}
 	enemies.append(enemy)
+
+func _move_enemy(enemy: Dictionary, delta: float) -> void:
+	var path_index: int = enemy.path_index
+	if path_index >= path_points.size():
+		return
+	var target: Vector2 = path_points[path_index]
+	var distance := enemy.position.distance_to(target)
+	var travel := enemy.speed * delta
+	if distance <= travel:
+		enemy.position = target
+		enemy.path_index = path_index + 1
+	else:
+		enemy.position += enemy.position.direction_to(target) * travel
 
 func _is_buildable(point: Vector2) -> bool:
 	for path_point in path_points:
