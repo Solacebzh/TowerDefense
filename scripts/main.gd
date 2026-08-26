@@ -290,18 +290,18 @@ func _tower_rate_mult() -> float:
 func _update_towers(delta: float) -> void:
 	var dmg_mult := _tower_damage_mult()
 	var rate_mult := _tower_rate_mult()
-	for t in towers:
+	for t: Tower in towers:
 		t.cooldown -= delta
 		if t.cooldown > 0.0:
 			continue
 		var def: Dictionary = GameData.TOWERS[t.type]
 		var best: Enemy = null
 		var best_progress := -1.0
-		for e in enemies:
-			var d := t.pos.distance_to(e.pos)
-			if d <= def.range:
+		for e: Enemy in enemies:
+			var d: float = t.pos.distance_to(e.pos)
+			if d <= float(def.range):
 				# Prefer the enemy furthest along the path (closest to keep).
-				var progress := float(e.path_index) + (1.0 - e.pos.distance_to(path_points[min(e.path_index, path_points.size()-1)]) * 0.001)
+				var progress: float = float(e.path_index) + (1.0 - e.pos.distance_to(path_points[min(e.path_index, path_points.size()-1)]) * 0.001)
 				if progress > best_progress:
 					best_progress = progress
 					best = e
@@ -324,16 +324,16 @@ func _fire(t: Tower, def: Dictionary, target: Enemy, dmg_mult: float) -> void:
 	projectiles.append(p)
 
 func _update_projectiles(delta: float) -> void:
-	for p in projectiles.duplicate():
+	for p: Projectile in projectiles.duplicate():
 		p.life -= delta
 		if p.life <= 0.0:
 			projectiles.erase(p)
 			continue
 		if p.attack == "pierce":
-			var prev := p.pos
+			var prev: Vector2 = p.pos
 			p.pos += p.vel * delta
 			# hit any enemy passed through (once each)
-			for e in enemies.duplicate():
+			for e: Enemy in enemies.duplicate():
 				if not p.already_hit.has(e) and _seg_hits(prev, p.pos, e.pos, 26.0):
 					p.already_hit.append(e)
 					_deal_damage(e, p.damage, p)
@@ -346,7 +346,7 @@ func _update_projectiles(delta: float) -> void:
 			projectiles.erase(p)
 			continue
 		var tpos: Vector2 = p.target.pos
-		var travel := p.speed * delta
+		var travel: float = p.speed * delta
 		if p.pos.distance_to(tpos) <= travel:
 			p.pos = tpos
 			_impact(p)
@@ -759,9 +759,9 @@ func _draw_building_plot(plot: Dictionary) -> void:
 		_ui_text(pos + Vector2(-30, -34), "%s Nv.%d" % [def.name, lvl], 10, Color("cbb0a0"))
 	# cost tooltip on hover
 	if hovered and phase != Phase.GAMEOVER:
-		var maxed := lvl >= def.max_level
-		var label := "MAX" if maxed else "%d or" % building_cost(id)
-		var affordable := (not maxed) and gold >= building_cost(id)
+		var maxed: bool = lvl >= int(def.max_level)
+		var label: String = "MAX" if maxed else "%d or" % building_cost(id)
+		var affordable: bool = (not maxed) and gold >= building_cost(id)
 		var col := Color("3fae54") if affordable else Color("b06a6a")
 		if maxed:
 			col = Color("d9b477")
@@ -795,7 +795,7 @@ func _draw_enemy(e: Enemy) -> void:
 		draw_circle(e.pos, def.draw_w * 0.4, Color(0.5, 0.9, 0.3, 0.12))
 	# hp bar
 	var bw: float = def.draw_w * 0.8
-	var bp := e.pos + Vector2(-bw*0.5, -def.draw_w * (0.95 if e.boss else 0.75))
+	var bp := e.pos + Vector2(-bw*0.5, -float(def.draw_w) * (0.95 if e.boss else 0.75))
 	draw_rect(Rect2(bp, Vector2(bw, 5)), Color("140d10"), true)
 	var r: float = clamp(e.hp / e.hp_max, 0.0, 1.0)
 	var col := Color("d43a3a") if not e.boss else Color("ff8a2a")
@@ -839,7 +839,7 @@ func _draw_hud() -> void:
 func _draw_tower_card(rect: Rect2, id: String) -> void:
 	var def: Dictionary = GameData.TOWERS[id]
 	var selected := selected_tower_type == id
-	var affordable := gold >= def.cost
+	var affordable: bool = gold >= int(def.cost)
 	var bg := Color("1a151f")
 	if selected:
 		bg = Color("2c2030")
@@ -884,7 +884,7 @@ func _draw_menu() -> void:
 func _draw_meta_card(rect: Rect2, id: String) -> void:
 	var def: Dictionary = GameData.META[id]
 	var lvl := Save.meta_level(id)
-	var maxed := lvl >= def.max_level
+	var maxed: bool = lvl >= int(def.max_level)
 	draw_rect(rect, Color("15111b"), true)
 	draw_rect(rect, Color("3a2b40"), false, 1.5)
 	_ui_text(rect.position + Vector2(14, 22), def.name, 15, Color("e7d5c6"))
