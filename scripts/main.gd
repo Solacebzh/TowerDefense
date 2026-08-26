@@ -141,7 +141,13 @@ func _draw() -> void:
 	for enemy in enemies:
 		var p: Vector2 = enemy["position"]
 		var bob := sin(elapsed * 8.0 + p.x * 0.03) * 2.0
-		draw_texture_rect(MONSTER_TEXTURE, Rect2(p + Vector2(-28, -30 + bob), Vector2(56, 60)), false)
+		var path_index: int = enemy["path_index"]
+		var facing := Vector2.RIGHT
+		if path_index < path_points.size():
+			facing = p.direction_to(path_points[path_index])
+		draw_set_transform(p + Vector2(0, bob), facing.angle(), Vector2(1, 1))
+		draw_texture_rect(MONSTER_TEXTURE, Rect2(-28, -30, Vector2(56, 60)), false)
+		draw_set_transform(Vector2.ZERO, 0.0, Vector2.ONE)
 		var hp_ratio: float = float(enemy["hp"]) / 3.0
 		draw_rect(Rect2(p + Vector2(-22, -40), Vector2(44, 4)), Color("1a1219"), true)
 		draw_rect(Rect2(p + Vector2(-22, -40), Vector2(44 * hp_ratio, 4)), Color("b8454d"), true)
