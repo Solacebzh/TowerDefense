@@ -3,7 +3,9 @@ extends Node2D
 ## This intentionally uses procedural pixel-like shapes until authored sprites are added.
 
 const MAP_RECT := Rect2(40, 92, 1200, 570)
-const PATH_POINTS := PackedVector2Array([
+# PackedVector2Array is initialized at runtime because Godot does not accept
+# its constructor as a constant expression in every 4.x version.
+var path_points := PackedVector2Array([
 	Vector2(40, 505), Vector2(220, 505), Vector2(220, 260),
 	Vector2(510, 260), Vector2(510, 535), Vector2(820, 535),
 	Vector2(820, 205), Vector2(1240, 205)
@@ -43,11 +45,11 @@ func _unhandled_input(event: InputEvent) -> void:
 		queue_redraw()
 
 func _enemies_spawn() -> void:
-	var enemy := {"position": PATH_POINTS[0], "direction": Vector2.RIGHT, "speed": 34.0 + wave * 2.0}
+	var enemy := {"position": path_points[0], "direction": Vector2.RIGHT, "speed": 34.0 + wave * 2.0}
 	enemies.append(enemy)
 
 func _is_buildable(point: Vector2) -> bool:
-	for path_point in PATH_POINTS:
+	for path_point in path_points:
 		if point.distance_to(path_point) < 65.0:
 			return false
 	return true
@@ -61,10 +63,10 @@ func _draw() -> void:
 	for y in range(92, 663, 32):
 		draw_line(Vector2(40, y), Vector2(1240, y), Color(0.18, 0.14, 0.2, 0.35), 1)
 	# Blood-dark road with a pale worn center.
-	draw_polyline(PATH_POINTS, Color("0c0b11"), 76.0, true)
-	draw_polyline(PATH_POINTS, Color("4b3034"), 64.0, true)
-	draw_polyline(PATH_POINTS, Color("68444a"), 3.0, true)
-	for point in PATH_POINTS:
+	draw_polyline(path_points, Color("0c0b11"), 76.0, true)
+	draw_polyline(path_points, Color("4b3034"), 64.0, true)
+	draw_polyline(path_points, Color("68444a"), 3.0, true)
+	for point in path_points:
 		draw_circle(point, 5.0, Color("a86a67"))
 	# Towers: black stone silhouette, crimson core.
 	for point in towers:
