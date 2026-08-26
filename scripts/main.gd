@@ -17,11 +17,18 @@ var wave := 0
 var running_wave := false
 var spawn_timer := 0.0
 var selected_position := Vector2.ZERO
+var elapsed := 0.0
+var projectiles: Array[Dictionary] = []
+const TOWER_RANGE: float = 150.0
+const TOWER_FIRE_RATE: float = 0.7
+const MONSTER_TEXTURE := preload("res://assets/art/monster_crawler.png")
+const TOWER_TEXTURE := preload("res://assets/art/tower_blood_crystal.png")
 
 func _ready() -> void:
 	queue_redraw()
 
 func _process(delta: float) -> void:
+	elapsed += delta
 	if running_wave:
 		spawn_timer -= delta
 		if spawn_timer <= 0.0 and enemies.size() < 14:
@@ -29,7 +36,9 @@ func _process(delta: float) -> void:
 			_enemies_spawn()
 		for enemy in enemies:
 			_move_enemy(enemy, delta)
-		queue_redraw()
+		_update_towers(delta)
+	_update_projectiles(delta)
+	queue_redraw()
 
 func _unhandled_input(event: InputEvent) -> void:
 	if event is InputEventMouseButton and event.pressed and event.button_index == MOUSE_BUTTON_LEFT:
@@ -48,7 +57,9 @@ func _enemies_spawn() -> void:
 	var enemy := {
 		"position": path_points[0],
 		"path_index": 1,
-		"speed": 34.0 + wave * 2.0
+		"speed": 34.0 + wave * 2.0,
+		"hp": 3,
+		"fire_cooldown": 0.0
 	}
 	enemies.append(enemy)
 
@@ -66,6 +77,40 @@ func _move_enemy(enemy: Dictionary, delta: float) -> void:
 		enemy["path_index"] = path_index + 1
 	else:
 		enemy["position"] = current_position + current_position.direction_to(target) * travel
+
+
+func _update_towers(delta: float) -> void:
+	for tower_position in towers:
+		var best: Dictionary = {}
+		var best_distance := TOWER_RANGE
+		for enemy in enemies:
+			var distance: float = tower_position.distance_to(enemy["position"])
+			if distance < best_distance:
+				best = enemy
+				best_distance = distance
+		if not best.is_empty():
+			var cooldown: float = float(best["fire_cooldown"]) - delta
+			if cooldown <= 0.0:
+				projectiles.append({"position": tower_position, "target": best, "speed": 420.0, "damage": 1})
+				best["fire_cooldown"] = TOWER_FIRE_RATE
+
+func _update_projectiles(delta: float) -> void:
+	for projectile in projectiles.duplicate():
+		var target: Dictionary = projectile["target"]
+		if not enemies.has(target):
+			projectiles.erase(projectile)
+			continue
+		var position: Vector2 = projectile["position"]
+		var target_position: Vector2 = target["position"]
+		var travel: float = float(projectile["speed"]) * delta
+		if position.distance_to(target_position) <= travel:
+			target["hp"] = int(target["hp"]) - int(projectile["damage"])
+			projectiles.erase(projectile)
+			if int(target["hp"]) <= 0:
+				enemies.erase(target)
+				gold += 15
+		else:
+			projectile["position"] = position + position.direction_to(target_position) * travel
 
 func _is_buildable(point: Vector2) -> bool:
 	for path_point in path_points:
@@ -87,19 +132,22 @@ func _draw() -> void:
 	draw_polyline(path_points, Color("68444a"), 3.0, true)
 	for point in path_points:
 		draw_circle(point, 5.0, Color("a86a67"))
-	# Towers: black stone silhouette, crimson core.
+	# Towers with range rings and authored pixel sprites.
 	for point in towers:
-		draw_circle(point, 43.0, Color(0.55, 0.1, 0.13, 0.12))
-		draw_circle(point, 24.0, Color("17141c"))
-		draw_circle(point, 15.0, Color("792b38"))
-		draw_circle(point, 7.0, Color("d06b61"))
-		draw_line(point + Vector2(-17, -17), point + Vector2(17, 17), Color("302735"), 5)
-	# Enemies as readable crimson silhouettes for the prototype.
+		draw_circle(point, TOWER_RANGE, Color(0.55, 0.1, 0.13, 0.06))
+		draw_arc(point, TOWER_RANGE, 0.0, TAU, 64, Color(0.65, 0.24, 0.28, 0.22), 2.0)
+		draw_texture_rect(TOWER_TEXTURE, Rect2(point - Vector2(42, 50), Vector2(84, 100)), false)
+	# Animated authored monster sprites and crimson projectiles.
 	for enemy in enemies:
-		var p: Vector2 = enemy.position
-		draw_circle(p, 14.0, Color("0b090d"))
-		draw_circle(p, 9.0, Color("943d46"))
-		draw_circle(p + Vector2(-3, -2), 2.0, Color("f0b06b"))
+		var p: Vector2 = enemy["position"]
+		var bob := sin(elapsed * 8.0 + p.x * 0.03) * 2.0
+		draw_texture_rect(MONSTER_TEXTURE, Rect2(p + Vector2(-28, -30 + bob), Vector2(56, 60)), false)
+		var hp_ratio: float = float(enemy["hp"]) / 3.0
+		draw_rect(Rect2(p + Vector2(-22, -40), Vector2(44, 4)), Color("1a1219"), true)
+		draw_rect(Rect2(p + Vector2(-22, -40), Vector2(44 * hp_ratio, 4)), Color("b8454d"), true)
+	for projectile in projectiles:
+		draw_circle(projectile["position"], 6.0, Color("ff6b55"))
+		draw_circle(projectile["position"], 13.0, Color(0.9, 0.15, 0.12, 0.18))
 	# UI.
 	draw_rect(Rect2(0, 0, 1280, 72), Color("0c0a10"), true)
 	draw_line(Vector2(0, 71), Vector2(1280, 71), Color("71343e"), 2)
